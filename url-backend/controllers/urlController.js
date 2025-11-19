@@ -1,42 +1,30 @@
 import crypto from "crypto";
 import Url from "../models/Url.js";
 
-// Helper: generate crypto domain
-function generateCryptoDomain() {
-  const random = crypto.randomBytes(4).toString("hex");  // e.g. a92kd9f3
-  const tlds = ["com", "net", "org", "io", "app"];
-  const tld = tlds[Math.floor(Math.random() * tlds.length)];
-  return `https://${random}.${tld}`;
-}
-
 // CREATE SHORT URL
 export const createShortUrl = async (req, res) => {
   try {
     const { longUrl } = req.body;
 
-    if (!longUrl)
+    if (!longUrl) {
       return res.json({ success: false, message: "URL is required" });
+    }
 
-    // 1️⃣ Crypto-generated domain instead of BASE_URL from .env
-    const cryptoBaseUrl = generateCryptoDomain(); 
-
-    // 2️⃣ Crypto-generated path
+    // Generate short ID
     const shortId = crypto.randomBytes(4).toString("hex");
 
-    // 3️⃣ Save data
+    // Save into DB
     const newUrl = await Url.create({
       shortId,
-      longUrl,
-      cryptoDomain: cryptoBaseUrl
+      longUrl
     });
 
-    // 4️⃣ Return two URLs:
-    // - crypto front URL (for users)
-    // - backend working URL (redirect)
+    // Use ONLY your frontend domain from .env
+    const shortUrl = `${process.env.BASE_URL}/${shortId}`;
+
     return res.json({
       success: true,
-      shortUrl: `${cryptoBaseUrl}/${shortId}`,                 // CRYPTO FORM
-      backendShortUrl: `${process.env.BASE_URL}/${shortId}`,   // REAL REDIRECT
+      shortUrl,
       data: newUrl
     });
 
@@ -46,21 +34,25 @@ export const createShortUrl = async (req, res) => {
   }
 };
 
-// REDIRECT URL
+// REDIRECT URL HANDLER
 export const redirectUrl = async (req, res) => {
   try {
     const { shortId } = req.params;
 
     const data = await Url.findOne({ shortId });
-    if (!data) return res.status(404).send("Short URL not found");
+
+    if (!data) {
+      return res.status(404).send("Short URL not found");
+    }
 
     data.clicks += 1;
     await data.save();
 
+    // Redirect to real long URL
     return res.redirect(data.longUrl);
 
   } catch (error) {
     console.log(error);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
