@@ -7,8 +7,23 @@ export const createShortUrl = async (req, res) => {
     const { longUrl } = req.body;
 
     if (!longUrl) {
-      return res.json({ success: false, message: "URL is required" });
+      return res.json({
+        success: false,
+        message: "URL is required",
+      });
     }
+
+    // Check if BASE_URL exists
+    if (!process.env.BASE_URL) {
+      console.error("❌ ERROR: BASE_URL missing in .env");
+      return res.status(500).json({
+        success: false,
+        message: "Server configuration error: BASE_URL missing",
+      });
+    }
+
+    // Remove trailing slash from BASE_URL (important)
+    const cleanBaseUrl = process.env.BASE_URL.replace(/\/$/, "");
 
     // Generate short ID
     const shortId = crypto.randomBytes(4).toString("hex");
@@ -16,25 +31,24 @@ export const createShortUrl = async (req, res) => {
     // Save into DB
     const newUrl = await Url.create({
       shortId,
-      longUrl
+      longUrl,
     });
 
-    // Use ONLY your frontend domain from .env
-    const shortUrl = `${process.env.BASE_URL}/${shortId}`;
+    // Final short URL
+    const shortUrl = `${cleanBaseUrl}/${shortId}`;
 
     return res.json({
       success: true,
       shortUrl,
-      data: newUrl
+      data: newUrl,
     });
-
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.json({ success: false, message: "Server Error" });
   }
 };
 
-// REDIRECT URL HANDLER
+// REDIRECT HANDLER
 export const redirectUrl = async (req, res) => {
   try {
     const { shortId } = req.params;
@@ -48,11 +62,9 @@ export const redirectUrl = async (req, res) => {
     data.clicks += 1;
     await data.save();
 
-    // Redirect to real long URL
     return res.redirect(data.longUrl);
-
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).send("Server Error");
   }
 };
