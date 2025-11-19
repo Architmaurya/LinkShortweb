@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import urlRoutes from "./routes/urlRoutes.js";
-import statusRoutes from "./routes/statusRoutes.js";
 
 dotenv.config();
 
@@ -19,14 +18,11 @@ app.get("/", (req, res) => {
 // Connect DB
 connectDB();
 
-// API Routes
-app.use("/api", statusRoutes);
-
 // URL Routes
 app.use("/", urlRoutes);
 
 // Start server
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT;
 app.listen(PORT, () =>
-  console.log(`🚀 Server running at `)
+  console.log(`🚀 Server running `)
 );
