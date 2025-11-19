@@ -1,0 +1,47 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+
+# Production build
+dist/
+build/
+
+# IDE/Editor files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+
+# Cache
+.cache/
+.npm/
+.yarn-cache/
+
+# Lock files (optional)
+package-lock.json
+yarn.lock
+.env
