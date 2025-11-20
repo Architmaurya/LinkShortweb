@@ -6,12 +6,16 @@ export default function RedirectPage() {
 
   useEffect(() => {
     const redirect = async () => {
-      try {
-        // Call backend redirect route
-        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/${shortId}`;
-      } catch (error) {
-        console.error(error);
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+      // SAFETY CHECK – avoid undefined URLs
+      if (!backendUrl) {
+        console.error("❌ ERROR: VITE_BACKEND_URL is missing in your .env file");
+        return;
       }
+
+      // Redirect to backend → backend redirects to long URL
+      window.location.href = `${backendUrl}/${shortId}`;
     };
 
     redirect();
