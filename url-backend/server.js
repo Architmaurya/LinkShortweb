@@ -9,13 +9,15 @@ dotenv.config();
 const app = express();
 
 // Clean BASE_URL (remove trailing slash)
-const FRONTEND_URL = process.env.BASE_URL?.replace(/\/$/, "");
+// const FRONTEND_URL = process.env.BASE_URL?.replace(/\/$/, "");
 
 app.use(
   cors({
-    origin: FRONTEND_URL,   // <-- Pick frontend URL from .env
+    origin: [
+      process.env.BASE_URL?.replace(/\/$/, ""),  // main frontend
+      /\.vercel\.app$/,                           // all Vercel deployments
+    ],
     methods: ["GET", "POST"],
-    credentials: false,
   })
 );
 
