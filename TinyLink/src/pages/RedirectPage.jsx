@@ -7,7 +7,7 @@ export default function RedirectPage() {
 
   useEffect(() => {
     const redirect = async () => {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_BASE_URL;
 
       if (!backendUrl) {
         setMessage("❌ BACKEND URL missing in .env file");
