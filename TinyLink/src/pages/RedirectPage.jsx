@@ -1,21 +1,49 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 export default function RedirectPage() {
   const { shortId } = useParams();
+  const [message, setMessage] = useState("Redirecting...");
 
   useEffect(() => {
     const redirect = async () => {
       const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-      // SAFETY CHECK – avoid undefined URLs
       if (!backendUrl) {
-        console.error("❌ ERROR: VITE_BACKEND_URL is missing in your .env file");
+        setMessage("❌ BACKEND URL missing in .env file");
+        console.error("❌ VITE_BACKEND_URL missing");
         return;
       }
 
-      // Redirect to backend → backend redirects to long URL
-      window.location.href = `${backendUrl}/${shortId}`;
+      const finalUrl = `${backendUrl.replace(/\/$/, "")}/${shortId}`;
+      console.log("🔗 Redirecting to backend:", finalUrl);
+
+      try {
+        // Try fetching the backend to see response
+        const response = await fetch(finalUrl, {
+          method: "GET",
+          redirect: "follow",
+        });
+
+        console.log("🔍 Backend response:", response);
+
+        if (response.status === 404) {
+          setMessage("❌ Short URL not found or expired.");
+          return;
+        }
+
+        if (!response.ok) {
+          setMessage("❌ Server error when redirecting.");
+          return;
+        }
+
+        // If backend sends a redirect, browser will auto follow
+        window.location.href = finalUrl;
+
+      } catch (error) {
+        console.error("❌ Redirect Error:", error);
+        setMessage("❌ Unable to reach backend.");
+      }
     };
 
     redirect();
@@ -23,7 +51,7 @@ export default function RedirectPage() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center text-xl">
-      Redirecting...
+      {message}
     </div>
   );
 }
